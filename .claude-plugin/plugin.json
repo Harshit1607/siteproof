@@ -1,0 +1,8 @@
+{
+  "name": "siteproof",
+  "version": "0.1.0",
+  "description": "Audit a Next.js site across SEO, GEO and speed, apply ranked fixes, and prove each one on a local preview before shipping one PR.",
+  "author": { "name": "Harshit" },
+  "license": "MIT",
+  "keywords": ["seo", "geo", "ai-search", "core-web-vitals", "lighthouse", "nextjs", "opennext", "cloudflare"]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "siteproof",
+  "owner": { "name": "Harshit" },
+  "description": "siteproof: proven SEO, GEO and speed fixes for Next.js sites.",
+  "plugins": [
+    {
+      "name": "siteproof",
+      "source": "./",
+      "description": "Audit a Next.js site across SEO, GEO and speed, apply ranked fixes, prove each one on a local preview.",
+      "version": "0.1.0",
+      "license": "MIT"
+    }
+  ]
+}

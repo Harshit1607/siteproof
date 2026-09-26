@@ -1,0 +1,19 @@
+siteproof includes Node.js ports of code from amazing-seo-skill
+https://github.com/metawhisp/amazing-seo-skill (commit 76470c5959d2cbe544568c471fd07919e8442e1f)
+Copyright the amazing-seo-skill contributors (metawhisp).
+Licensed under the Apache License, Version 2.0 (see amazing-seo-skill-LICENSE-Apache-2.0.txt).
+
+Ported files and the siteproof files that contain the ports:
+  scripts/llms_txt_checker.py      -> scripts/checks/geo.mjs (scoreLlms, geo.llms-txt)
+  scripts/robots_checker.py        -> scripts/checks/geo.mjs (parseRobots, rulesFor, isBlocked, geo.robots-ai)
+  scripts/js_rendering_diff.py     -> scripts/checks/geo.mjs (geo.js-off-content)
+  scripts/sitemap_validator.py     -> scripts/checks/seo.mjs, scripts/checks/lib.mjs (seo.sitemap, sitemapUrls)
+  scripts/schema_graph_checker.py  -> scripts/checks/seo.mjs (seo.jsonld)
+  scripts/broken_links_checker.py  -> scripts/checks/seo.mjs (seo.broken-links)
+  scripts/images_audit.py          -> scripts/checks/seo.mjs (seo.img-alt)
+
+Changes made by siteproof: rewritten in JavaScript for Node 20+; page fetching through Playwright
+(JavaScript on and off) instead of requests/BeautifulSoup; results reduced to pass/fail per check ID
+with per-page failure details; AI crawler list split into search crawlers (fail) and training crawlers
+(reported only); robots matching supports * wildcards; URLs on the prod origin are mapped onto the
+local preview origin; only internal links are probed; image checks limited to alt coverage.

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "siteproof/schema/finding.schema.json",
+  "title": "siteproof Finding",
+  "description": "A fact about the site observed by an auditor. Findings are facts, not changes. Adapted from claude-seo-ai's finding.schema.json (MIT): falsifiable evidence plus the check or metric that reproduces it.",
+  "type": "object",
+  "required": ["id", "area", "title", "evidence"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^(seo|geo|speed)-[a-z0-9-]+$", "description": "Unique within one audit, e.g. seo-missing-title." },
+    "area": { "enum": ["SEO", "GEO", "Speed"] },
+    "title": { "type": "string" },
+    "evidence": {
+      "type": "object",
+      "required": ["observed"],
+      "properties": {
+        "observed": { "type": "string", "description": "The observed fact, verbatim and reproducible (e.g. '/about has no <title>')." },
+        "urls": { "type": "array", "items": { "type": "string" } },
+        "files": { "type": "array", "items": { "type": "string" }, "description": "Source files responsible, when found in the repo." }
+      }
+    },
+    "checkIds": { "type": "array", "items": { "type": "string" }, "description": "Failing check IDs that reproduce this Finding (SEO/GEO)." },
+    "metrics": { "type": "object", "description": "Speed: the Lighthouse numbers/diagnostics behind it, e.g. {\"lcpMs\": 18350, \"wastedBytes\": 3296371}." },
+    "severity": { "type": "integer", "minimum": 1, "maximum": 5, "description": "Auditor's read of how bad it is, input to the planner's impact score." },
+    "content": { "type": "boolean", "description": "The remedy is a copy/content rewrite (suggest only)." }
+  }
+}

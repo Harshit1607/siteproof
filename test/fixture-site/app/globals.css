@@ -1,0 +1,4 @@
+body { margin: 0; font-family: var(--font-roboto), sans-serif; color: #111; }
+header, main, footer { max-width: 960px; margin: 0 auto; padding: 16px; }
+.hero { width: 100%; height: auto; display: block; }
+nav a { margin-right: 12px; }

@@ -1,0 +1,24 @@
+{
+  "name": "siteproof",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Claude Code plugin: audit a Next.js site across SEO, GEO and speed, apply ranked fixes, prove each one on a local preview.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test \"test/unit/*.test.mjs\"",
+    "test:int": "node --test --test-concurrency=1 \"test/integration/*.test.mjs\"",
+    "fixture": "cd test/fixture-site && pnpm install && pnpm build",
+    "test:e2e": "node test/e2e/fix-pipeline.mjs"
+  },
+  "dependencies": {
+    "chrome-launcher": "^1.2.1",
+    "lighthouse": "^12.8.2",
+    "pixelmatch": "^7.2.0",
+    "playwright": "^1.63.0",
+    "pngjs": "^7.0.0"
+  }
+}

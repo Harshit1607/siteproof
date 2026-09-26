@@ -1,0 +1,27 @@
+{
+  "name": "siteproof-fixture",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "node make-hero.mjs && next build",
+    "start": "next start",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "lint": "node -e \"process.exit(0)\""
+  },
+  "dependencies": {
+    "next": "16.3.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@opennextjs/cloudflare": "1.20.6",
+    "wrangler": "4.136.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "workerd",
+      "sharp"
+    ]
+  }
+}

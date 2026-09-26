@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "siteproof/schema/fix.schema.json",
+  "title": "siteproof Fix",
+  "description": "One change addressing one or more Findings, in exactly one Area. One Fix is one commit. Based on claude-seo-ai's finding.schema.json (MIT), extended with ranking and proof fields. Enforced at runtime by scripts/lib/plan.mjs validateFix().",
+  "type": "object",
+  "required": ["key", "area", "title", "why", "impact", "effort", "confidence", "risk", "findingIds", "checkIds"],
+  "properties": {
+    "key": { "type": "string", "pattern": "^(seo|geo|speed):[a-z0-9][a-z0-9.-]*$", "description": "Stable Fix key <area>:<slug>. Same problem → same key on every audit; used for issue dedup, Plan↔issue matching and stale-issue closing." },
+    "area": { "enum": ["SEO", "GEO", "Speed"], "description": "Picked by the Fix's primary intent." },
+    "title": { "type": "string", "description": "What changes, in a few words." },
+    "why": { "type": "string", "description": "Evidence shown in the Plan, e.g. 'LCP −2.1s' or '6 routes missing titles'. Not used in scoring." },
+    "impact": { "type": "integer", "minimum": 1, "maximum": 5, "description": "Shared 1–5 scale with a per-Area rubric (see agents/planner.md)." },
+    "effort": { "enum": ["S", "M", "L"], "description": "S=1, M=2, L=3 in the score." },
+    "confidence": { "type": "number", "minimum": 0.5, "maximum": 1 },
+    "risk": { "enum": ["none", "low", "med", "high"], "description": "Chance the change breaks something or visibly changes the page." },
+    "targetMetric": { "enum": ["LCP", "TBT", "CLS", "bytes"], "description": "Speed Fixes only: the one metric its Proof is judged on." },
+    "findingIds": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "Findings (from the auditors) this Fix addresses." },
+    "checkIds": { "type": "array", "items": { "type": "string" }, "description": "SEO/GEO: check IDs that must flip fail → pass to prove the Fix (e.g. seo.title, geo.llms-txt)." },
+    "content": { "type": "boolean", "description": "Content rewrite: listed as a suggestion and filed as a `content` issue, never applied." },
+    "detail": { "type": "string", "description": "Instructions for the fixer: files, routes, exact change, Next.js convention to use." },
+    "issue": { "type": "integer", "description": "Set by `ship.mjs sync` when an open siteproof issue has this key." }
+  }
+}
