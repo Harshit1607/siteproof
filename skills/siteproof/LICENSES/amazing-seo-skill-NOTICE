@@ -3,7 +3,7 @@ https://github.com/metawhisp/amazing-seo-skill (commit 76470c5959d2cbe544568c471
 Copyright the amazing-seo-skill contributors (metawhisp).
 Licensed under the Apache License, Version 2.0 (see amazing-seo-skill-LICENSE-Apache-2.0.txt).
 
-Ported files and the siteproof files that contain the ports:
+Ported files and the siteproof files that contain the ports (siteproof paths relative to the skill folder):
   scripts/llms_txt_checker.py      -> scripts/checks/geo.mjs (scoreLlms, geo.llms-txt)
   scripts/robots_checker.py        -> scripts/checks/geo.mjs (parseRobots, rulesFor, isBlocked, geo.robots-ai)
   scripts/js_rendering_diff.py     -> scripts/checks/geo.mjs (geo.js-off-content)

@@ -7,9 +7,9 @@ import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { keyComment } from '../../scripts/lib/issues.mjs';
+import { keyComment } from '../../skills/siteproof/scripts/lib/issues.mjs';
 
-const S = fileURLToPath(new URL('../../scripts/', import.meta.url));
+const S = fileURLToPath(new URL('../../skills/siteproof/scripts/', import.meta.url));
 const dir = mkdtempSync(join(tmpdir(), 'siteproof-gh-'));
 const state = join(dir, 'gh-state.json');
 const fakeGh = join(dir, 'fake-gh.mjs');

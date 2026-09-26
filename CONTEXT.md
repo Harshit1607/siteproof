@@ -1,6 +1,6 @@
 # siteproof
 
-A Claude Code plugin that audits a Next.js site across SEO, GEO and speed, applies ranked fixes, and proves each one on a local preview before shipping.
+An agent skill (packaged as a plugin where agents support plugins) that audits a Next.js site across SEO, GEO and speed, applies ranked fixes, and proves each one on a local preview before shipping.
 
 ## Language
 

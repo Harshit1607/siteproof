@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { rank, score, speedVerdict, checkFlipVerdict, uiVerdict, bisect, median } from '../../scripts/lib/decide.mjs';
+import { rank, score, speedVerdict, checkFlipVerdict, uiVerdict, bisect, median } from '../../skills/siteproof/scripts/lib/decide.mjs';
 
 const fix = (key, impact, effort, confidence = 1) => ({ key, area: key.split(':')[0], impact, effort, confidence });
 

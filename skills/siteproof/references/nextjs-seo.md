@@ -1,8 +1,3 @@
----
-name: nextjs-seo
-description: Next.js (App Router first, Pages Router second) conventions for SEO fixes - Metadata API, metadataBase, canonical, Open Graph, app/sitemap.ts, app/robots.ts, JSON-LD script tags, image alt. Use when auditing or fixing titles, descriptions, canonicals, OG tags, sitemaps, robots rules or structured data in a Next.js project.
----
-
 # Next.js SEO conventions
 
 Fix map adapted from claude-seo-ai `references/platforms/nextjs.md` (MIT). JSON-LD shapes from claude-seo-ai `schema/jsonld-templates/` (MIT).

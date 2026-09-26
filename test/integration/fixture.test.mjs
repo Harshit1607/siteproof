@@ -6,10 +6,10 @@ import { fileURLToPath } from 'node:url';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { startPreview } from '../../scripts/lib/project.mjs';
-import { runChecks } from '../../scripts/checks/run.mjs';
-import { measure } from '../../scripts/measure.mjs';
-import { capture, compare } from '../../scripts/screenshot.mjs';
+import { startPreview } from '../../skills/siteproof/scripts/lib/project.mjs';
+import { runChecks } from '../../skills/siteproof/scripts/checks/run.mjs';
+import { measure } from '../../skills/siteproof/scripts/measure.mjs';
+import { capture, compare } from '../../skills/siteproof/scripts/screenshot.mjs';
 
 const fixture = fileURLToPath(new URL('../fixture-site/', import.meta.url));
 let preview;

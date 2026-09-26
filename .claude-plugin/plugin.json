@@ -1,8 +1,22 @@
 {
   "name": "siteproof",
-  "version": "0.1.0",
-  "description": "Audit a Next.js site across SEO, GEO and speed, apply ranked fixes, and prove each one on a local preview before shipping one PR.",
-  "author": { "name": "Harshit" },
+  "version": "0.2.0",
+  "description": "Audit a Next.js site across SEO, GEO and speed, apply ranked fixes, and prove each one on a local preview before shipping one PR. One Agent Skill plus agents, commands and safety hooks; works in Claude Code, Codex, Copilot, omp, pi and any agent that reads Agent Skills.",
+  "author": {
+    "name": "Harshit"
+  },
   "license": "MIT",
-  "keywords": ["seo", "geo", "ai-search", "core-web-vitals", "lighthouse", "nextjs", "opennext", "cloudflare"]
+  "keywords": [
+    "seo",
+    "geo",
+    "ai-search",
+    "core-web-vitals",
+    "lighthouse",
+    "nextjs",
+    "opennext",
+    "cloudflare",
+    "agent-skills"
+  ],
+  "homepage": "https://github.com/Harshit1607/siteproof",
+  "repository": "https://github.com/Harshit1607/siteproof"
 }

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseRobots, rulesFor, isBlocked, scoreLlms } from '../../scripts/checks/geo.mjs';
+import { parseRobots, rulesFor, isBlocked, scoreLlms } from '../../skills/siteproof/scripts/checks/geo.mjs';
 
 test('robots: grouped user-agents, wildcard fallback, longest match', () => {
   const { groups, sitemaps } = parseRobots([

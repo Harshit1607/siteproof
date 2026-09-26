@@ -57,7 +57,7 @@ export function renderPlan({ url, date, prod, fixes, failingChecks = [] }) {
   const content = rank(fixes.filter(f => f.content));
   return [
     `# siteproof Plan`, '',
-    `Audited ${url} on ${date}. Untick anything you don't want in this run, then run \`/siteproof:fix\`.`,
+    `Audited ${url} on ${date}. Untick anything you don't want in this run, then ask your agent for the siteproof fix (\`/siteproof:fix\` where your agent has it).`,
     `Unticked Fixes are filed as GitHub issues so nothing is lost. Score = impact × confidence ÷ effort.`, '',
     prodTable(prod),
     `## Fixes (${appliable.length})`, '',

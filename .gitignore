@@ -2,5 +2,7 @@ node_modules/
 .next/
 .open-next/
 .wrangler/
-siteproof/
+# siteproof's working folder when it runs against this repo or the fixture (not the skill in skills/siteproof/)
+/siteproof/
+/test/fixture-site/siteproof/
 *.log

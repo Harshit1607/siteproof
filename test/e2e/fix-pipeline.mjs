@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
-const S = join(root, 'scripts');
+const S = join(root, 'skills', 'siteproof', 'scripts');
 const fixture = join(root, 'test', 'fixture-site');
 const work = join(mkdtempSync(join(tmpdir(), 'siteproof-e2e-')), 'site');
 const log = (...a) => console.log(`\n=== ${a.join(' ')}`);

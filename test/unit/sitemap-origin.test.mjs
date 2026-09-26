@@ -3,7 +3,7 @@
 // them by path against the origin most of the sitemap agrees on.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { seoChecks } from '../../scripts/checks/seo.mjs';
+import { seoChecks } from '../../skills/siteproof/scripts/checks/seo.mjs';
 
 const check = seoChecks.find(c => c.id === 'seo.sitemap');
 

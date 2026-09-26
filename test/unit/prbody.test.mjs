@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { renderPrBody, prTitle } from '../../scripts/lib/prbody.mjs';
+import { renderPrBody, prTitle } from '../../skills/siteproof/scripts/lib/prbody.mjs';
 
 const s = (lcp, bytes, score = 50) => ({ score, lcp, tbt: 100, cls: 0.01, bytes });
 const fixes = [

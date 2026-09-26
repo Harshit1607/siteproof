@@ -1,8 +1,3 @@
----
-name: nextjs-geo
-description: Next.js conventions for GEO (AI search visibility) fixes - llms.txt, AI crawler rules in robots.txt/app/robots.ts, and server-rendering content so it is readable without JavaScript. Use when auditing or fixing how ChatGPT, Perplexity, Claude or Google AI can reach, read and quote a Next.js site.
----
-
 # Next.js GEO conventions
 
 AI search crawlers generally **do not run JavaScript**: they read the server HTML. GEO in siteproof v1 is proven by three checks: `geo.llms-txt`, `geo.robots-ai`, `geo.js-off-content`. Reference adapted from mykpono/ultimate-seo-geo `references/ai-search-geo.md` (MIT) and claude-seo-ai `references/ai-crawlers.md` (MIT).

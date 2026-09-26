@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Git safety for /siteproof:fix. Run from the target project's root.
+// Git safety for the siteproof fix workflow. Run from the target project's root.
 //   node git.mjs preflight    refuse on a dirty tree, update main, warn about old siteproof work, create siteproof/<date>
 //   node git.mjs done         clear the "fix in progress" marker the hooks look at
 import { writeFileSync, existsSync, rmSync } from 'node:fs';
@@ -19,9 +19,9 @@ function baseBranch() {
 if (cmd === 'preflight') {
   if (git(['rev-parse', '--is-inside-work-tree']).code !== 0) fail('Not a git repository. siteproof needs git to commit each Fix.');
   if (isDirty()) {
-    fail(`You have uncommitted changes:\n${git(['status', '--short']).stdout}\nCommit or stash them yourself, then run /siteproof:fix again. siteproof never stashes or discards your work.`);
+    fail(`You have uncommitted changes:\n${git(['status', '--short']).stdout}\nCommit or stash them yourself, then run the siteproof fix again. siteproof never stashes or discards your work.`);
   }
-  if (!existsSync(wd('plan.md'))) fail('No Plan found at siteproof/plan.md. Run /siteproof:audit <url> first.');
+  if (!existsSync(wd('plan.md'))) fail('No Plan found at siteproof/plan.md. Run the siteproof audit (with the prod URL) first.');
   if (git(['rev-parse', '--verify', '--quiet', 'HEAD']).code !== 0) fail('The repository has no commits yet.');
 
   const base = baseBranch();

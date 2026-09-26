@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { keyComment, keyOf, openIssueKeys, staleIssues, issueFor, coveredByOthers } from '../../scripts/lib/issues.mjs';
+import { keyComment, keyOf, openIssueKeys, staleIssues, issueFor, coveredByOthers } from '../../skills/siteproof/scripts/lib/issues.mjs';
 
 const fix = { key: 'speed:hero-image', area: 'Speed', title: 'Hero image via next/image', why: 'LCP −2.1s', impact: 5, effort: 'S', confidence: 0.9, risk: 'low', targetMetric: 'LCP', checkIds: [] };
 

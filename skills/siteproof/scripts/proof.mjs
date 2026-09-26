@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Proof for /siteproof:fix. Run from the target project's root, on the siteproof branch.
+// Proof for the siteproof fix workflow. Run from the target project's root, on the siteproof branch.
 //   node proof.mjs baseline                         preview of unmodified main → scores, checks, screenshots
-//   node proof.mjs build <key>                      build (+lint, +typecheck) after the fixer's commit; exit 1 on failure
+//   node proof.mjs build <key>                      rules + build (+lint, +typecheck) after the fixer's commit; exit 1 on failure
 //   node proof.mjs undo <key> --reason <r> [--log f] [--detail s]   drop the Fix's commit, record why
 //   node proof.mjs speed <key>                      measure vs the previous kept step; keep or undo
 //   node proof.mjs checks                           SEO/GEO check flips vs Baseline; undo unproven/regressing Fixes
@@ -16,6 +16,7 @@ import { capture, diffImages, shotName, WIDTHS } from './screenshot.mjs';
 import { speedVerdict, checkFlipVerdict, uiVerdict, bisect } from './lib/decide.mjs';
 import { routeOfFile, uiPages } from './lib/routes.mjs';
 import { wd, readJson, writeJson, config, sh, git, withPreview, fixCommits, dropCommit, atRef, TRAILER } from './lib/project.mjs';
+import { diffViolations } from './lib/rules.mjs';
 
 const { values, positionals } = parseArgs({ allowPositionals: true, options: { reason: { type: 'string' }, log: { type: 'string' }, detail: { type: 'string' } } });
 const [cmd, key] = positionals;
@@ -67,10 +68,12 @@ if (cmd === 'baseline') {
     console.error(`HEAD is not a commit for ${key} (trailer "${TRAILER}: ${key}" missing). The fixer must commit each Fix with that trailer.`);
     process.exit(3);
   }
+  // The rules run here as well as in harness hooks, so they hold in harnesses without hooks.
+  const violations = diffViolations(git(['show', '--format=', '--unified=0', '--no-color', '--no-ext-diff', 'HEAD']).stdout);
   const steps = [['build', cfg.buildCommand], ['lint', cfg.lintCommand], ['typecheck', cfg.typecheckCommand]].filter(([, c]) => c);
-  let out = '';
-  let failed = null;
-  for (const [name, c] of steps) {
+  let out = violations.length ? `\n$ siteproof rules\n${violations.join('\n')}\nUndo those changes in the Fix commit (amend it) and fix the cause in the code instead.\n` : '';
+  let failed = violations.length ? 'rules' : null;
+  for (const [name, c] of failed ? [] : steps) {
     log(`${name}: ${c}`);
     const r = sh(c, { quiet: true });
     out += `\n$ ${c}\n${r.out}`;
@@ -84,7 +87,7 @@ if (cmd === 'baseline') {
     console.log(JSON.stringify({ ok: false, step: failed, log: logFile, tail: out.slice(-2500) }, null, 2));
     process.exit(1);
   }
-  console.log(JSON.stringify({ ok: true, steps: steps.map(s => s[0]) }));
+  console.log(JSON.stringify({ ok: true, steps: ['rules', ...steps.map(s => s[0])] }));
 } else if (cmd === 'undo') {
   if (!values.reason) throw new Error('--reason required');
   const logText = values.log && existsSync(values.log) ? readFileSync(values.log, 'utf8').slice(-6000) : undefined;

@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/install-deps.mjs\"",
+            "command": "node -e \"process.exit(require('child_process').spawnSync(process.execPath, [require('path').join(process.env.CLAUDE_PLUGIN_ROOT, 'skills', 'siteproof', 'scripts', 'setup.mjs'), '--hook'], { stdio: 'inherit' }).status ?? 0)\"",
             "timeout": 600
           }
         ]
@@ -13,11 +13,11 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Bash|Edit|Write|MultiEdit|NotebookEdit",
+        "matcher": "Bash|Edit|Write|MultiEdit|NotebookEdit|apply_patch",
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/guard.mjs\"",
+            "command": "node -e \"import(require('url').pathToFileURL(require('path').join(process.env.CLAUDE_PLUGIN_ROOT, 'hooks', 'guard.mjs'))).then(m => m.main())\"",
             "timeout": 10
           }
         ]

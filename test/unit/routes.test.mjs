@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { routeOfFile, uiPages } from '../../scripts/lib/routes.mjs';
+import { routeOfFile, uiPages } from '../../skills/siteproof/scripts/lib/routes.mjs';
 
 test('routeOfFile maps Next.js files to routes', () => {
   assert.deepEqual(routeOfFile('app/page.tsx'), { route: '/', subtree: false });

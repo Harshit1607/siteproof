@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { renderPlan, readTicks, selected, unselected, applyShortcut, parseShortcut, validateFix } from '../../scripts/lib/plan.mjs';
+import { renderPlan, readTicks, selected, unselected, applyShortcut, parseShortcut, validateFix } from '../../skills/siteproof/scripts/lib/plan.mjs';
 
 const F = (key, area, impact, effort, extra = {}) => ({
   key, area, title: `Fix ${key}`, why: `evidence for ${key}`, impact, effort, confidence: 1, risk: 'low',

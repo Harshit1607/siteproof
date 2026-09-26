@@ -60,7 +60,7 @@ export function issueFor(fix, outcome) {
       lines.push('', `**${page}**`, '', '| Before | After | Diff |', '|---|---|---|', `| ![](${im.before}) | ![](${im.after}) | ![](${im.diff}) |`);
     }
   }
-  lines.push('', '_Filed by siteproof. Re-run `/siteproof:audit` to pick it up again; it will be closed automatically once the problem is gone._');
+  lines.push('', '_Filed by siteproof. Run the siteproof audit again to pick it up; it will be closed automatically once the problem is gone._');
   return {
     title: `[siteproof] ${fix.area}: ${fix.title}`,
     body: lines.join('\n'),

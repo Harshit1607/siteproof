@@ -1,8 +1,3 @@
----
-name: nextjs-speed
-description: Next.js speed fixes judged on one Target Metric (LCP, TBT, CLS or bytes) - next/image with preload/priority and correct sizes, next/font with only used weights, next/script strategies, cutting client JavaScript, and OpenNext/Cloudflare specifics. Use when auditing or fixing Core Web Vitals or page weight in a Next.js project.
----
-
 # Next.js speed conventions
 
 Know-how adapted from addyosmani/web-quality-skills `core-web-vitals/` and `performance/` (MIT). siteproof keeps a Speed Fix only if its Target Metric improves on mobile by ≥ max(10%, floor) — floors: LCP 100ms, TBT 50ms, CLS 0.02, bytes 10KB — and no other metric on mobile or desktop gets worse by that margin. Make the change that actually moves the target.

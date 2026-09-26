@@ -36,24 +36,30 @@ Points 2 and 3 are the pitch: *fixes that are proven to work and proven not to b
 
 ```
 siteproof/
-├─ .claude-plugin/plugin.json
-├─ commands/              audit.md, fix.md
-├─ agents/
-│  ├─ seo-auditor.md      read-only  ─┐
-│  ├─ geo-auditor.md      read-only   ├─ run in parallel
-│  ├─ speed-auditor.md    read-only  ─┘
-│  ├─ planner.md          merges the three audits → one ranked Plan
-│  └─ fixer.md            the ONLY agent allowed to edit files
-├─ skills/
-│  ├─ nextjs-seo/         metadata API, sitemap.ts, robots.ts, JSON-LD
-│  ├─ nextjs-geo/         llms.txt, AI crawler rules, content readable without JS
-│  └─ nextjs-speed/       next/image, next/font, priority on the main image, script loading, cutting client JS
-├─ scripts/               all Node, no Python
-│  ├─ measure.mjs         Lighthouse on mobile and desktop → scores.json
-│  ├─ screenshot.mjs      Playwright captures at 390px and 1440px, then compare
-│  └─ checks/             pass/fail SEO and GEO checks (ported from amazing-seo-skill)
-├─ hooks/hooks.json       block edits to .env*, `wrangler deploy`, `git push --force`
-└─ LICENSES/              MIT and Apache notices for borrowed/ported code
+├─ skills/siteproof/          the whole product, one Agent Skill (works in any agent that reads skills)
+│  ├─ SKILL.md               finds its folder, runs setup, explains roles, routes to a workflow
+│  ├─ workflows/             audit.md, fix.md
+│  ├─ roles/
+│  │  ├─ seo-auditor.md      read-only  ─┐
+│  │  ├─ geo-auditor.md      read-only   ├─ run in parallel where the agent has subagents
+│  │  ├─ speed-auditor.md    read-only  ─┘
+│  │  ├─ planner.md          merges the three audits → one ranked Plan
+│  │  └─ fixer.md            the ONLY role allowed to edit files
+│  ├─ references/            nextjs-seo.md, nextjs-geo.md, nextjs-speed.md
+│  ├─ schema/                Finding and Fix formats
+│  ├─ scripts/               all Node, no Python
+│  │  ├─ setup.mjs           installs deps once per machine (shared cache), links them here
+│  │  ├─ measure.mjs         Lighthouse on mobile and desktop → scores.json
+│  │  ├─ screenshot.mjs      Playwright captures at 390px and 1440px, then compare
+│  │  ├─ checks/             pass/fail SEO and GEO checks (ported from amazing-seo-skill)
+│  │  └─ lib/rules.mjs       .env / deploy / force-push / lint-config / suppression rules
+│  └─ package.json           the scripts' npm dependencies
+├─ .claude-plugin/           marketplace + plugin manifest (Claude Code, Codex, Copilot, omp)
+├─ commands/                 audit.md, fix.md: thin wrappers → the skill's workflows
+├─ agents/                   thin wrappers → the skill's role briefs
+├─ hooks/                    hooks.json + guard.mjs: Claude-format hooks (Claude Code, Codex, Copilot)
+├─ extensions/siteproof.ts   the same guard + setup for pi and omp (root package.json "pi" key)
+└─ skills/siteproof/LICENSES/ MIT and Apache notices for borrowed/ported code (inside the skill, so every install carries them)
 ```
 
 ---
@@ -71,7 +77,7 @@ siteproof/
 | Audit → plan → execute flow, GEO reference | `mykpono/ultimate-seo-geo`: `SKILL.md`, `references/ai-search-geo.md`, `agents/PARALLEL-AUDIT.md` | MIT |
 | Benchmark to beat | `AgriciDaniel/claude-seo` (17k stars) | MIT |
 
-Copied files keep their original license headers. Ported Apache-2.0 code keeps its copyright and NOTICE in `LICENSES/`. Every source gets credit in the README.
+Copied files keep their original license headers. Ported Apache-2.0 code keeps its copyright and NOTICE in `skills/siteproof/LICENSES/`. Every source gets credit in the README.
 
 ---
 
