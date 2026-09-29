@@ -29,7 +29,7 @@ export function renderPrBody({ run, fixes, prod, prodChecks, filed = {}, shots =
   L.push(`siteproof applied **${kept.length} proven Fix${kept.length === 1 ? '' : 'es'}** to \`${run.baseBranch}\` ` +
     `(${['SEO', 'GEO', 'Speed'].map(a => `${a} ${kept.filter(f => f.area === a).length}`).join(' · ')}).`);
   L.push('');
-  L.push(`> **Proven on ${run.runtime ?? 'local preview'}.** Every number below compares a local preview of this branch with a local preview of unmodified \`${run.baseBranch}\` (the Baseline) on the same machine. Speed Fixes were measured one at a time (Lighthouse ×${run.runs ?? 5}, median); SEO/GEO Fixes were proven by pass/fail checks; screenshots show the UI did not change.`);
+  L.push(`> **Proven on ${run.runtime ?? 'local preview'}.** Every number below compares a local preview of this branch with a local preview of unmodified \`${run.baseBranch}\` (the Baseline) on the same machine. Speed Fixes were measured one at a time (Lighthouse ×${run.runs ?? 3}, median); SEO/GEO Fixes were proven by pass/fail checks; screenshots show the UI did not change.`);
   L.push('');
 
   L.push('## Fixes', '', '| # | Area | Fix | Measured result |', '|---|---|---|---|');
@@ -94,7 +94,7 @@ export function renderPrBody({ run, fixes, prod, prodChecks, filed = {}, shots =
   } else L.push('_None._');
   L.push('');
 
-  const closes = kept.filter(f => f.issue).map(f => `Closes #${f.issue}`);
+  const closes = [...new Set(kept.filter(f => f.issue).map(f => `Closes #${f.issue}`))];
   if (closes.length) L.push(...closes, '');
 
   L.push('---', '🤖 Generated with siteproof · proof data in `siteproof/` (git-ignored)');

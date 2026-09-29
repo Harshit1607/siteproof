@@ -168,6 +168,10 @@ const keys = git('log', '--format=%(trailers:key=Siteproof-Fix,valueonly)', `${r
 assert.deepEqual(keys, ['geo:js-off-content', 'geo:robots-ai', 'seo:img-alt', 'seo:title', 'speed:hero-image'], 'branch holds exactly the kept Fixes, one commit each');
 const body = read('siteproof/pr-body.md');
 for (const re of [/Proven on local Workers runtime/, /Hero as right-sized AVIF/, /flipped `seo.title`, `seo.description`/, /Only load used font weights \| broke the build/, /Open Graph tags \| changed the UI/, /Add app\/sitemap.ts \| unticked in the Plan/, /Answer-first homepage summary \| content change/, /`seo.sitemap`/]) assert.match(body, re);
-for (const k of ['speed_noop', 'speed_font-weights', 'seo_jsonld', 'seo_canonical', 'seo_og', 'seo_sitemap', 'geo_answer-first']) assert.ok(existsSync(join(work, `siteproof/issues/${k}.md`)), k);
+assert.ok(existsSync(join(work, 'siteproof/issues/deferred-fixes.md')));
+const deferredBody = read('siteproof/issues/deferred-fixes.md');
+for (const k of ['speed:noop', 'speed:font-weights', 'seo:jsonld', 'seo:canonical', 'seo:og', 'seo:sitemap', 'geo:answer-first']) {
+  assert.match(deferredBody, new RegExp(`<!--\\s*siteproof:${k}\\s*-->`), k);
+}
 assert.ok(run.final.scores.mobile.lcp < run.baseline.scores.mobile.lcp);
 console.log(`\nE2E OK. Work dir: ${work}\nPR body: ${join(work, 'siteproof/pr-body.md')}`);

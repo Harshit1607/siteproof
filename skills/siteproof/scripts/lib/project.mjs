@@ -73,7 +73,7 @@ export function config() {
     runtime: workers ? 'local Workers runtime (OpenNext + wrangler)' : 'local Next.js server',
     hideSelectors: c.hideSelectors ?? [],
     uiThreshold: c.uiThreshold ?? 0.005,
-    runs: c.runs ?? 5,
+    runs: c.runs ?? 3,
     pages: c.pages ?? 15,
   };
 }

@@ -3,7 +3,7 @@
 // --dry-run) nothing is sent: issue and PR bodies are written to siteproof/ instead.
 //   node ship.mjs keys                 open siteproof issue keys → {key: number} (for the planner)
 //   node ship.mjs sync                 audit time: mark fixes.json rows that match open issues; comment + close stale ones
-//   node ship.mjs issues [--dry-run]   file one issue per Deferred Fix (deduped by Fix key)
+//   node ship.mjs issues [--dry-run]   file a single issue containing every Deferred Fix (deduped by Fix keys)
 //   node ship.mjs pr [--dry-run]       render the PR body, push the branch, open one PR against main
 import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
@@ -11,7 +11,7 @@ import { relative, basename } from 'node:path';
 import { parseArgs } from 'node:util';
 import { wd, readJson, writeJson, git, currentBranch, auditChecks } from './lib/project.mjs';
 import { gh, ghBlocker, listSiteproofIssues, ensureLabels } from './lib/gh.mjs';
-import { openIssueKeys, staleIssues, issueFor, keyOf, coveredByOthers } from './lib/issues.mjs';
+import { openIssueKeys, staleIssues, issueFor, combinedIssueFor, keyOf, keysOf, coveredByOthers } from './lib/issues.mjs';
 import { renderPrBody, prTitle } from './lib/prbody.mjs';
 import { unselected } from './lib/plan.mjs';
 
@@ -60,7 +60,9 @@ if (cmd === 'keys') {
   writeJson(fixesFile, Array.isArray(raw) ? fixes : { ...raw, fixes });
   const stale = staleIssues(open, fixes.map(f => f.key));
   for (const i of stale) {
-    gh(['issue', 'comment', String(i.number), '--body', `siteproof re-audited the site on ${new Date().toISOString().slice(0, 10)} and no longer finds this problem (\`${keyOf(i.body)}\`). Closing.`]);
+    const keys = keysOf(i.body);
+    const keyMsg = keys.length ? ` (\`${keys.join(', ')}\`)` : '';
+    gh(['issue', 'comment', String(i.number), '--body', `siteproof re-audited the site on ${new Date().toISOString().slice(0, 10)} and no longer finds the problems in this issue${keyMsg}. Closing.`]);
     gh(['issue', 'close', String(i.number), '--reason', 'completed']);
   }
   console.log(JSON.stringify({ matched: Object.fromEntries(fixes.filter(f => f.issue).map(f => [f.key, f.issue])), closedStale: stale.map(i => i.number) }, null, 2));
@@ -79,28 +81,49 @@ if (cmd === 'keys') {
   const existing = blocker ? {} : openIssueKeys(listSiteproofIssues('open'));
   const filed = {};
   mkdirSync(wd('issues'), { recursive: true });
+  if (deferred.length === 0) {
+    run.filed = filed;
+    writeJson(wd('run.json'), run);
+    if (blocker) say(`GitHub skipped (${blocker}): no deferred fixes to file`);
+    console.log(JSON.stringify({ filed, dryRun: !!blocker }, null, 2));
+    process.exit(0);
+  }
+
   if (!blocker) ensureLabels(['siteproof', 'seo', 'geo', 'speed', 'deferred', 'failed-proof', 'broke-build', 'changes-ui', 'content']);
+  const items = [];
   for (const f of deferred) {
     const o = run.fixes[f.key] ?? {};
     const imgFiles = Object.values(o.images ?? {}).flatMap(im => [im.before, im.after, im.diff]).filter(p => p && existsSync(p));
     const urls = publishImages(imgFiles, `${run.date}/${f.key.replace(/[^a-z0-9.-]+/gi, '_')}`, wd('issues'));
     const images = o.images && Object.fromEntries(Object.entries(o.images).map(([k, im]) => [k, { before: urls[im.before], after: urls[im.after], diff: urls[im.diff] }]));
-    const issue = issueFor(f, { reason: f.content ? 'content' : o.status, detail: o.detail, numbers: o.numbers, log: o.log, images });
-    const file = wd('issues', `${f.key.replace(/[^a-z0-9.-]+/gi, '_')}.md`);
-    writeFileSync(file, `# ${issue.title}\n\nlabels: ${issue.labels.join(', ')}\n\n${issue.body}\n`);
-    if (blocker) { filed[f.key] = null; continue; }
-    const number = existing[f.key];
-    if (number) {
-      gh(['issue', 'comment', String(number), '--body', `siteproof run ${run.date}: still deferred (${issue.labels.at(-1)}).\n\n${o.detail ?? ''}`]);
-      filed[f.key] = number;
-    } else {
-      const url = gh(['issue', 'create', '--title', issue.title, '--body-file', file, ...issue.labels.flatMap(l => ['--label', l])]).trim();
-      filed[f.key] = Number(url.match(/(\d+)\s*$/)?.[1]);
-    }
+    items.push({
+      fix: f,
+      outcome: { reason: f.content ? 'content' : o.status, detail: o.detail, numbers: o.numbers, log: o.log, images },
+    });
+  }
+  const issue = combinedIssueFor(items, { date: run.date });
+  const file = wd('issues', 'deferred-fixes.md');
+  writeFileSync(file, `# ${issue.title}\n\nlabels: ${issue.labels.join(', ')}\n\n${issue.body}\n`);
+  if (blocker) {
+    for (const f of deferred) filed[f.key] = null;
+    run.filed = filed;
+    writeJson(wd('run.json'), run);
+    say(`GitHub skipped (${blocker}): 1 issue body written to ${file}`);
+    console.log(JSON.stringify({ filed, dryRun: !!blocker }, null, 2));
+    process.exit(0);
+  }
+  const existingNumbers = [...new Set(deferred.map(f => existing[f.key]).filter(Boolean))];
+  let issueNumber = existingNumbers[0];
+  if (issueNumber) {
+    gh(['issue', 'comment', String(issueNumber), '--body', `siteproof run ${run.date}: updated deferred fixes (${items.length} problems).\n\n${issue.body}`]);
+    for (const f of deferred) filed[f.key] = issueNumber;
+  } else {
+    const url = gh(['issue', 'create', '--title', issue.title, '--body-file', file, ...issue.labels.flatMap(l => ['--label', l])]).trim();
+    issueNumber = Number(url.match(/(\d+)\s*$/)?.[1]);
+    for (const f of deferred) filed[f.key] = issueNumber;
   }
   run.filed = filed;
   writeJson(wd('run.json'), run);
-  if (blocker) say(`GitHub skipped (${blocker}): ${deferred.length} issue bodies written to ${wd('issues')}`);
   console.log(JSON.stringify({ filed, dryRun: !!blocker }, null, 2));
 } else if (cmd === 'pr') {
   const run = readJson(wd('run.json'));

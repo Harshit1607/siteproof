@@ -19,7 +19,7 @@ Before this: SKILL.md §1–2 (find `SKILL_DIR`, run setup). Below, `S` means `<
 
 2. **Selection.** `node "S/plan.mjs" selected` → `apply` (ticked, in apply order: Speed first, then SEO/GEO), `unticked`, `content`. If `apply` is empty, skip to step 7.
 
-3. **Baseline.** `node "S/proof.mjs" baseline`. It builds and serves the project's own local preview (for OpenNext: the local Workers runtime, no Cloudflare credentials), runs Lighthouse ×5 on mobile and desktop, all checks, and screenshots. If the preview can't start, show the error and stop.
+3. **Baseline.** `node "S/proof.mjs" baseline`. It builds and serves the project's own local preview (for OpenNext: the local Workers runtime, no Cloudflare credentials), runs Lighthouse ×3 on mobile and desktop, all checks, and screenshots. If the preview can't start, show the error and stop.
 
 4. **Apply each Fix, in `apply` order.** For each Fix:
    1. Run the fixer role (`roles/fixer.md`, SKILL.md §3) with this envelope (the Fix JSON verbatim from `siteproof/fixes.json`):
@@ -42,9 +42,9 @@ Before this: SKILL.md §1–2 (find `SKILL_DIR`, run setup). Below, `S` means `<
 6. **UI check.** `node "S/proof.mjs" ui`. Screenshots at 390px and 1440px of the homepage, one page per route type and every page a kept Fix touched, compared with the Baseline. A page that differs beyond the threshold is traced to the Fix responsible (bisect), which is undone (`changes-ui`, images kept); the other Fixes still ship. It ends with final Lighthouse + checks for the PR.
 
 7. **Ship.**
-   - `node "S/ship.mjs" issues`: one issue per Deferred Fix (unticked, failed-proof, broke-build, changes-ui, content), deduped by Fix key.
+   - `node "S/ship.mjs" issues`: a single issue containing every Deferred Fix (unticked, failed-proof, broke-build, changes-ui, content), deduped by Fix keys.
    - If at least one Fix was kept: `node "S/ship.mjs" pr`. Otherwise tell the user no Fix survived Proof and no PR was opened.
    - `node "S/git.mjs" done`.
-   Without a GitHub remote both steps run dry: they write `siteproof/issues/*.md` and `siteproof/pr-body.md` and send nothing.
+   Without a GitHub remote both steps run dry: they write `siteproof/issues/deferred-fixes.md` and `siteproof/pr-body.md` and send nothing.
 
 8. **Report.** `node "S/proof.mjs" status`. Show: PR link (or the dry-run body path), a table of every Fix with its outcome and measured result, the Baseline → final Lighthouse numbers for mobile and desktop, and the issues filed. Keep it short; the PR body has the full proof.

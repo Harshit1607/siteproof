@@ -57,7 +57,7 @@ The promise: *fixes that are proven to work and proven not to break the UI.*
 
 29. As a site owner, I want a Baseline measured on a local preview of unmodified main, so that every result is compared like with like.
 30. As a site owner, I want proof run locally with no Cloudflare credentials, so that I can use siteproof without deploy access.
-31. As a site owner, I want Lighthouse run 5 times on mobile and on desktop with the median used, so that one noisy run can't decide a Fix's fate.
+31. As a site owner, I want Lighthouse run 3 times on mobile and on desktop with the median used, so that one noisy run can't decide a Fix's fate.
 32. As a site owner, I want Speed Fixes measured one at a time, each against the previous kept step, so that every Fix's effect is attributed correctly.
 33. As a site owner, I want a Speed Fix kept only if its Target Metric improves on mobile by at least 10% and above a minimum floor, so that noise isn't mistaken for improvement.
 34. As a site owner, I want a Speed Fix undone if it makes any other metric worse on either device, so that no Fix trades one problem for another.
@@ -88,7 +88,7 @@ The promise: *fixes that are proven to work and proven not to break the UI.*
 53. As a site owner, I want every Fix I unticked filed as a GitHub issue, so that I can pick it up later.
 54. As a site owner, I want every Fix that failed proof, broke the build or changed the UI filed as an issue with its numbers, logs or images, so that nobody retries it blindly.
 55. As a site owner, I want content suggestions filed as issues, so that a writer can act on them.
-56. As a site owner, I want one issue per Fix, labelled with siteproof, its Area and its reason, so that the backlog is easy to filter.
+56. As a site owner, I want a single issue for all Deferred Fixes, labelled with siteproof, their Areas and reasons, so that the backlog is consolidated.
 57. As a site owner, I want re-running the audit not to create duplicate issues, so that the backlog stays clean.
 58. As a site owner, I want picking a previously deferred Fix to close its issue when the PR merges, so that the backlog updates itself.
 59. As a site owner, I want open siteproof issues whose problem no longer exists to get a comment and be closed on the next audit, so that the backlog doesn't go stale.
@@ -109,14 +109,14 @@ The promise: *fixes that are proven to work and proven not to break the UI.*
 - **Plan file:** a Markdown checkbox list in the siteproof working folder (git-ignored). It is the source of truth for selection; chat shortcuts only edit it.
 - **Modules on the Node side:**
   - *Decision logic* (pure, no I/O): scoring and ranking; Speed verdict (baseline step vs after step → keep/undo + reason); check-flip verdict (before/after check results + a Fix's check IDs → proven/not proven/caused a regression); UI verdict (diff ratio vs threshold). This is where the thresholds live: 10% relative, floors of LCP 100ms, TBT 50ms, CLS 0.02, bytes 10KB, UI 0.5% of pixels.
-  - *Measure:* Lighthouse, mobile + desktop, N runs → median per metric as JSON. 5 runs for timing, 1 for bytes.
+  - *Measure:* Lighthouse, mobile + desktop, N runs → median per metric as JSON. 3 runs for timing, 1 for bytes.
   - *Checks:* SEO and GEO pass/fail checks ported to Node from amazing-seo-skill (llms.txt, robots/AI crawlers, JS-off rendering diff, sitemap, JSON-LD graph, broken links, images, canonical, OG, title/description). Given a URL, they output JSON results keyed by check ID. JS-off rendering uses Playwright with JavaScript disabled.
   - *Screenshot:* Playwright at 390px and 1440px with animations disabled, fonts/images loaded, and configured selectors hidden; outputs images plus a diff ratio.
 - **Proof environment:** the project's own local preview (OpenNext on the local Workers runtime). No Cloudflare deploy in v1. Baseline and every step are measured on the same machine in the same session.
 - **Fix loop:** apply → commit → build/lint/typecheck (one repair attempt, else undo with reason `broke-build`) → for Speed, cumulative measurement and verdict (undo with `failed-proof`). SEO/GEO are verified together after all Fixes are applied. The UI check runs last; on failure, bisect the kept commits to find the culprit and undo it (`changes-ui`).
 - **Git rules:** a dirty tree aborts; the branch is `siteproof/<YYYY-MM-DD>` off freshly pulled main; existing siteproof branches/PRs trigger a warning only.
 - **Hooks:** block edits to `.env*`, `wrangler deploy`, and `git push --force`.
-- **Output:** one PR via `gh`. Deferred Fix issues via `gh`, one per Fix, labelled `siteproof` + Area + reason (`deferred`, `failed-proof`, `broke-build`, `changes-ui`, `content`), with the Fix key embedded as an HTML comment.
+  - **Output:** one PR via `gh`. Deferred Fixes via `gh` in a single issue containing every problem, labelled `siteproof` + Area + reason (`deferred`, `failed-proof`, `broke-build`, `changes-ui`, `content`), with Fix keys embedded as HTML comments.
 - **Re-audit is the source of truth:** issues are memory only. Picking a matching Plan row links "Closes #N" in the PR; issues whose Finding has disappeared are commented on and closed.
 - **Build order:** (1) skeleton + measure + audit → Plan; (2) fixer + skills + checks + fix loop with build check; (3) proof: Baseline, Speed verdicts, check flips, screenshots, auto-undo; (4) PR body + issues + dedup/close; (5) run on a real production site for the demo.
 

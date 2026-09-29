@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Lighthouse on mobile + desktop, N runs each → median per metric. Bytes come from one run.
-//   node measure.mjs <url> [--runs 5] [--out scores.json]
+//   node measure.mjs <url> [--runs 3] [--out scores.json]
 // Output: { url, runs, mobile: {score,lcp,tbt,cls,bytes}, desktop: {...}, samples }
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
@@ -49,7 +49,7 @@ async function once(url, port, device) {
   };
 }
 
-export async function measure(url, { runs = 5 } = {}) {
+export async function measure(url, { runs = 3 } = {}) {
   const chrome = await chromeLauncher.launch({ chromePath: chromePath(), chromeFlags: ['--headless=new', '--no-sandbox'] });
   const out = { url, runs, at: new Date().toISOString(), samples: {} };
   try {
@@ -76,8 +76,8 @@ export async function measure(url, { runs = 5 } = {}) {
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const { values, positionals } = parseArgs({ allowPositionals: true, options: { runs: { type: 'string' }, out: { type: 'string' } } });
-  if (!positionals[0]) { console.error('usage: measure.mjs <url> [--runs 5] [--out file]'); process.exit(64); }
-  const res = await measure(positionals[0], { runs: Number(values.runs ?? 5) });
+  if (!positionals[0]) { console.error('usage: measure.mjs <url> [--runs 3] [--out file]'); process.exit(64); }
+  const res = await measure(positionals[0], { runs: Number(values.runs ?? 3) });
   const json = JSON.stringify(res, null, 2);
   if (values.out) { mkdirSync(dirname(values.out), { recursive: true }); writeFileSync(values.out, json); }
   console.log(JSON.stringify({ url: res.url, runs: res.runs, mobile: res.mobile, desktop: res.desktop }, null, 2));

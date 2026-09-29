@@ -63,23 +63,40 @@ test('sync marks matching rows and closes stale issues; issues are filed once', 
   let s = JSON.parse(readFileSync(state, 'utf8'));
   assert.equal(s.issues.find(i => i.number === 8).state, 'CLOSED');
   assert.equal(s.issues.find(i => i.number === 9).state, 'OPEN', 'foreign issues untouched');
-  assert.match(s.comments[0].body, /no longer finds this problem/);
+  assert.match(s.comments[0].body, /no longer finds/);
 
-  // A fix run: seo:title unticked (deferred), speed:hero-image failed its Proof, content suggestion.
+  // A fix run with existing issue 7 matching seo:title: all deferred fixes bundled into single issue 7 via comment
   writeFileSync(join(project, 'siteproof', 'plan.md'), '- [ ] 1. **SEO** Fix seo:title — _w_ · `seo:title`\n- [x] 2. **Speed** Fix speed:hero-image — _w_ · `speed:hero-image`\n');
   writeFileSync(join(project, 'siteproof', 'run.json'), JSON.stringify({ date: '2026-09-22', fixes: { 'speed:hero-image': { key: 'speed:hero-image', status: 'failed-proof', detail: 'LCP needed −400ms', numbers: { before: { mobile: { lcp: 4000 } }, after: { mobile: { lcp: 3900 } } } } } }));
   const first = ship('issues');
-  assert.equal(first.filed['seo:title'], 7, 'existing open issue reused, not duplicated');
-  assert.ok(first.filed['speed:hero-image'] >= 100 && first.filed['geo:answer-first'] >= 100);
+  assert.deepEqual(first.filed, { 'seo:title': 7, 'speed:hero-image': 7, 'geo:answer-first': 7 }, 'existing open issue reused for all deferred fixes');
   s = JSON.parse(readFileSync(state, 'utf8'));
-  const created = s.issues.filter(i => i.number >= 100);
-  assert.equal(created.length, 2);
-  const hero = created.find(i => i.body.includes(keyComment('speed:hero-image')));
-  assert.deepEqual(hero.labels, ['siteproof', 'speed', 'failed-proof']);
-  assert.match(hero.body, /4000ms \| 3900ms/);
-  assert.deepEqual(created.find(i => i.body.includes(keyComment('geo:answer-first'))).labels, ['siteproof', 'geo', 'content']);
+  const updateComment = s.comments.find(c => c.number === 7);
+  assert.ok(updateComment, 'comment added to single existing issue');
+  assert.match(updateComment.body, /speed:hero-image/);
+  assert.match(updateComment.body, /geo:answer-first/);
 
-  const second = ship('issues'); // re-run: same keys → comments only
+  const second = ship('issues'); // re-run: same keys → comments only, no new issues
   assert.deepEqual(second.filed, first.filed);
   assert.equal(JSON.parse(readFileSync(state, 'utf8')).issues.length, s.issues.length, 'no duplicates on re-run');
+});
+
+test('creates exactly a single issue containing all deferred problems when none existed', () => {
+  writeFileSync(state, JSON.stringify({ calls: [], comments: [], issues: [] }));
+  const fixes = [fix('speed:hero-image', 'Speed'), fix('geo:answer-first', 'GEO', { content: true, checkIds: [] }), fix('seo:sitemap', 'SEO')];
+  writeFileSync(join(project, 'siteproof', 'fixes.json'), JSON.stringify(fixes));
+  writeFileSync(join(project, 'siteproof', 'plan.md'), '- [x] 1. **Speed** Fix speed:hero-image — _w_ · `speed:hero-image`\n- [ ] 2. **SEO** Fix seo:sitemap — _w_ · `seo:sitemap`\n');
+  writeFileSync(join(project, 'siteproof', 'run.json'), JSON.stringify({ date: '2026-09-22', fixes: { 'speed:hero-image': { key: 'speed:hero-image', status: 'failed-proof', detail: 'LCP needed −400ms' } } }));
+
+  const res = ship('issues');
+  const s = JSON.parse(readFileSync(state, 'utf8'));
+  assert.equal(s.issues.length, 1, 'exactly one single issue created for all problems');
+  const singleIssue = s.issues[0];
+  assert.equal(singleIssue.number, 100);
+  assert.deepEqual(res.filed, { 'speed:hero-image': 100, 'geo:answer-first': 100, 'seo:sitemap': 100 });
+  assert.match(singleIssue.body, /<!-- siteproof:speed:hero-image -->/);
+  assert.match(singleIssue.body, /<!-- siteproof:geo:answer-first -->/);
+  assert.match(singleIssue.body, /<!-- siteproof:seo:sitemap -->/);
+  assert.match(singleIssue.title, /\[siteproof\] Deferred fixes/);
+  assert.deepEqual(singleIssue.labels, ['siteproof', 'speed', 'geo', 'seo', 'failed-proof', 'content', 'deferred']);
 });

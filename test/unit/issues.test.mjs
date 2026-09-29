@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { keyComment, keyOf, openIssueKeys, staleIssues, issueFor, coveredByOthers } from '../../skills/siteproof/scripts/lib/issues.mjs';
+import { keyComment, keyOf, keysOf, openIssueKeys, staleIssues, issueFor, combinedIssueFor, coveredByOthers } from '../../skills/siteproof/scripts/lib/issues.mjs';
 
 const fix = { key: 'speed:hero-image', area: 'Speed', title: 'Hero image via next/image', why: 'LCP −2.1s', impact: 5, effort: 'S', confidence: 0.9, risk: 'low', targetMetric: 'LCP', checkIds: [] };
 
@@ -9,6 +9,7 @@ test('key comment round-trips and survives surrounding text', () => {
   assert.equal(keyOf('<!--siteproof:seo:titles-->'), 'seo:titles');
   assert.equal(keyOf('no key here'), null);
   assert.equal(keyOf('<!-- siteproof:other:x -->'), null);
+  assert.deepEqual(keysOf(`first: ${keyComment('geo:llms-txt')}\nsecond: ${keyComment('speed:hero-image')}`), ['geo:llms-txt', 'speed:hero-image']);
 });
 
 test('dedup: open issues map by key; closed and foreign issues ignored; first wins', () => {
@@ -19,6 +20,34 @@ test('dedup: open issues map by key; closed and foreign issues ignored; first wi
     { number: 6, state: 'OPEN', body: keyComment('seo:titles') },
   ];
   assert.deepEqual(openIssueKeys(issues), { 'seo:titles': 3 });
+});
+test('dedup: single issue with multiple keys maps each key to the same issue number', () => {
+  const issues = [
+    { number: 42, state: 'OPEN', body: `${keyComment('seo:titles')}\n${keyComment('geo:llms-txt')}` },
+    { number: 43, state: 'OPEN', body: keyComment('seo:titles') },
+  ];
+  assert.deepEqual(openIssueKeys(issues), { 'seo:titles': 42, 'geo:llms-txt': 42 });
+});
+
+test('stale: multi-key issue is stale only when all its keys are gone', () => {
+  const issues = [
+    { number: 10, state: 'OPEN', body: `${keyComment('seo:titles')}\n${keyComment('geo:llms-txt')}` },
+  ];
+  assert.deepEqual(staleIssues(issues, ['seo:titles']).map(i => i.number), [], 'one key remains → not stale');
+  assert.deepEqual(staleIssues(issues, []).map(i => i.number), [10], 'all keys gone → stale');
+});
+
+test('combinedIssueFor: produces a single issue with all deferred problems', () => {
+  const items = [
+    { fix, outcome: { reason: 'failed-proof', detail: 'LCP needed −400ms' } },
+    { fix: { key: 'seo:sitemap', area: 'SEO', title: 'Missing sitemap', why: 'sitemap 404', impact: 4, effort: 'S', confidence: 1, risk: 'none', checkIds: ['seo.sitemap'] }, outcome: { reason: 'deferred' } },
+  ];
+  const combined = combinedIssueFor(items, { date: '2026-09-29' });
+  assert.equal(combined.title, '[siteproof] Deferred fixes (2 problems)');
+  assert.deepEqual(combined.labels, ['siteproof', 'speed', 'seo', 'failed-proof', 'deferred']);
+  assert.deepEqual(keysOf(combined.body), ['speed:hero-image', 'seo:sitemap']);
+  assert.match(combined.body, /### Speed: Hero image via next\/image/);
+  assert.match(combined.body, /### SEO: Missing sitemap/);
 });
 
 test('stale: open issues whose key is gone from the audit', () => {

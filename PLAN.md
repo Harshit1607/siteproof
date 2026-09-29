@@ -110,7 +110,7 @@ Copied files keep their original license headers. Ported Apache-2.0 code keeps i
 
 **Baseline**
 - Build and run the local preview (`pnpm preview`, local Workers runtime) of unmodified main.
-- Measure: Lighthouse mobile + desktop, 5 runs → median (bytes: 1 run). Run SEO/GEO checks. Take screenshots.
+- Measure: Lighthouse mobile + desktop, 3 runs → median (bytes: 1 run). Run SEO/GEO checks. Take screenshots.
 - All Proof compares against this Baseline, never prod. Before/after are on the same machine, so machine speed cancels out.
 
 **Per Fix (one commit each)**
@@ -134,7 +134,7 @@ Copied files keep their original license headers. Ported Apache-2.0 code keeps i
 - Still-failing checks nobody picked
 - Screenshot proof the UI didn't change
 
-**Deferred Fix issues** (GitHub Issues via `gh`), one per Fix, labelled `siteproof` + Area + reason (`deferred` / `failed-proof` / `broke-build` / `changes-ui` / `content`). Body includes a stable key (`<!-- siteproof:<area>:<slug> -->`) for dedup, plus measured numbers where relevant. On each audit, open siteproof issues whose Finding no longer exists get a comment and are closed.
+**Deferred Fix issue** (GitHub Issues via `gh`), a single issue containing every Deferred Fix, labelled `siteproof` + Area + reason (`deferred` / `failed-proof` / `broke-build` / `changes-ui` / `content`). Body includes stable keys (`<!-- siteproof:<area>:<slug> -->`) for dedup, plus measured numbers where relevant. On each audit, open siteproof issues whose Findings no longer exist get a comment and are closed.
 
 ---
 
@@ -156,7 +156,7 @@ Phase 1 alone is demo-able: "here's what's wrong with our site, ranked."
 
 | Risk | Mitigation |
 |---|---|
-| Lighthouse scores vary between runs | 5 runs, median, per-metric threshold before a Fix counts |
+| Lighthouse scores vary between runs | 3 runs, median, per-metric threshold before a Fix counts |
 | Local preview isn't Cloudflare's edge | Proof compares before vs after on the same machine; edge-only fixes (cache headers) are out of scope for v1 |
 | Screenshot false alarms (carousels, dates, font rendering) | Disable animations, wait for load, user-configured hidden selectors, 0.5% threshold |
 | GEO results only show up in weeks, once AI crawlers revisit | v1 proves GEO with pass/fail checks; LLM-citation tracking comes later |

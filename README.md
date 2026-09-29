@@ -7,7 +7,7 @@ An agent skill (plus a plugin for agents that support plugins) that audits a **N
 | Workflow | Ask for it | What it does |
 |---|---|---|
 | **audit** | `/siteproof:audit <prod url>`, or "siteproof audit https://…" | Read-only. Runs the SEO, GEO and speed auditors and writes a ranked, all-ticked Plan to `siteproof/plan.md`. |
-| **fix** | `/siteproof:fix`, or "siteproof fix" | Applies the ticked Fixes on `siteproof/<date>`, one commit each, proves each against a Baseline of unmodified main, opens one PR, and files every Deferred Fix as an issue. |
+| **fix** | `/siteproof:fix`, or "siteproof fix" | Applies the ticked Fixes on `siteproof/<date>`, one commit each, proves each against a Baseline of unmodified main, opens one PR, and files every Deferred Fix in a single issue. |
 
 The slash commands exist where the agent has plugin commands (Claude Code, Copilot, omp). Everywhere else, ask in plain words or invoke the `siteproof` skill.
 
@@ -30,11 +30,11 @@ Agents that can run subagents get one per role (auditors, planner, fixer). Agent
 
 From a clone: `claude --plugin-dir /path/to/siteproof`, `omp plugin marketplace add /path/to/siteproof`, or `npx skills add /path/to/siteproof`.
 
-Needs Node 20+, npm, git, and Chrome/Chromium (Lighthouse uses installed Chrome, falling back to Playwright's). No Python. `gh` (logged in) is only needed to file issues and open the PR; without a GitHub remote siteproof runs dry and writes `siteproof/pr-body.md` and `siteproof/issues/*.md` instead.
+Needs Node 20+, npm, git, and Chrome/Chromium (Lighthouse uses installed Chrome, falling back to Playwright's). No Python. `gh` (logged in) is only needed to file issues and open the PR; without a GitHub remote siteproof runs dry and writes `siteproof/pr-body.md` and `siteproof/issues/deferred-fixes.md` instead.
 
 ## How it proves things
 
-- **Baseline:** the project's own local preview of unmodified main (OpenNext projects: `opennextjs-cloudflare preview`, the local Workers runtime, no Cloudflare credentials). Lighthouse ×5 mobile + desktop (median; bytes from one run), all checks, screenshots. Every Proof compares against this, on the same machine.
+- **Baseline:** the project's own local preview of unmodified main (OpenNext projects: `opennextjs-cloudflare preview`, the local Workers runtime, no Cloudflare credentials). Lighthouse ×3 mobile + desktop (median; bytes from one run), all checks, screenshots. Every Proof compares against this, on the same machine.
 - **Speed Fixes** are applied one at a time and measured cumulatively. Kept only if the Target Metric improves on mobile by ≥ max(10%, floor, run-to-run spread) — floors LCP 100ms, TBT 50ms, CLS 0.02, bytes 10KB; the spread is the widest range of the two steps' own runs, so machine jitter never counts as proof — and no other metric on either device gets worse by the same margin. Otherwise undone (`failed-proof`).
 - **SEO/GEO Fixes** are proven together: each Fix's check IDs must flip fail → pass, and no passing check may start failing (the culprit is found by bisecting and undone). Pre-existing failures nobody picked are ignored and listed in the PR.
 - **UI check:** homepage, one page per route type and every page a Fix touched, at 390px and 1440px, animations off, fonts/images loaded, `hideSelectors` hidden. More than 0.5% of pixels different → bisect to the Fix, undo it (`changes-ui`, with before/after/diff images), ship the rest.
@@ -69,7 +69,7 @@ Run them by hand: `node skills/siteproof/scripts/checks/run.mjs https://example.
   "previewCommand": "pnpm preview",
   "previewUrl": "http://localhost:8787",
   "buildCommand": "pnpm build",
-  "runs": 5,
+  "runs": 3,
   "uiThreshold": 0.005,
   "pages": 15
 }

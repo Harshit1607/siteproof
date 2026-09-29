@@ -3,27 +3,35 @@ import { fmt } from './decide.mjs';
 
 // Reasons a Fix left the run. `covered` never becomes an issue: another Fix in the same PR already did it.
 export const REASONS = ['deferred', 'failed-proof', 'broke-build', 'changes-ui', 'content', 'covered'];
-const COMMENT_RE = /<!--\s*siteproof:((?:seo|geo|speed):[a-z0-9][a-z0-9.-]*)\s*-->/;
+const COMMENT_RE = /<!--\s*siteproof:((?:seo|geo|speed):[a-z0-9][a-z0-9.-]*)\s*-->/g;
 
 export const keyComment = (key) => `<!-- siteproof:${key} -->`;
-export const keyOf = (body = '') => body.match(COMMENT_RE)?.[1] ?? null;
+export function keysOf(body = '') {
+  const matches = [...body.matchAll(COMMENT_RE)];
+  return matches.map(m => m[1]);
+}
+export const keyOf = (body = '') => keysOf(body)[0] ?? null;
 
 // issues: [{number, body, state}] from `gh issue list --json number,body,state`. Returns {key: number}.
 export function openIssueKeys(issues) {
   const out = {};
   for (const i of issues) {
-    const k = keyOf(i.body);
-    if (k && (i.state ?? 'OPEN').toUpperCase() === 'OPEN' && !(k in out)) out[k] = i.number;
+    if ((i.state ?? 'OPEN').toUpperCase() !== 'OPEN') continue;
+    for (const k of keysOf(i.body)) {
+      if (!(k in out)) out[k] = i.number;
+    }
   }
   return out;
 }
 
-// Open siteproof issues whose Fix key no longer appears in the current audit.
+// Open siteproof issues whose Fix keys no longer appear in the current audit.
 export function staleIssues(issues, currentKeys) {
   const keep = new Set(currentKeys);
   return issues.filter(i => {
-    const k = keyOf(i.body);
-    return k && (i.state ?? 'OPEN').toUpperCase() === 'OPEN' && !keep.has(k);
+    if ((i.state ?? 'OPEN').toUpperCase() !== 'OPEN') return false;
+    const keys = keysOf(i.body);
+    if (keys.length === 0) return false;
+    return keys.every(k => !keep.has(k));
   });
 }
 
@@ -66,6 +74,50 @@ export function issueFor(fix, outcome) {
     body: lines.join('\n'),
     labels: ['siteproof', fix.area.toLowerCase(), outcome.reason],
   };
+}
+
+/**
+ * items: [{ fix, outcome }]. outcome: {reason, detail?, numbers?, log?, images?}.
+ * Returns a single consolidated issue {title, body, labels} containing every problem.
+ */
+export function combinedIssueFor(items, { date } = {}) {
+  if (!items.length) throw new Error('no items for combined issue');
+  const sections = items.map(({ fix, outcome }) => {
+    if (!REASONS.includes(outcome.reason)) throw new Error(`unknown reason ${outcome.reason}`);
+    const lines = [
+      keyComment(fix.key), '',
+      `### ${fix.area}: ${fix.title}`, '',
+      `**Why:** ${fix.why}`, '',
+      `**Status:** ${REASON_TEXT[outcome.reason]}`, '',
+      `Impact ${fix.impact} · effort ${fix.effort} · confidence ${fix.confidence} · risk ${fix.risk}` +
+        (fix.targetMetric ? ` · target ${fix.targetMetric}` : ''),
+    ];
+    if (fix.checkIds?.length) lines.push('', `Proving checks: ${fix.checkIds.map(c => `\`${c}\``).join(', ')}`);
+    if (fix.detail) lines.push('', fix.detail);
+    if (outcome.detail) lines.push('', `**Result:** ${outcome.detail}`);
+    if (outcome.numbers) lines.push('', numbersTable(outcome.numbers));
+    if (outcome.log) lines.push('', '<details><summary>Build log</summary>', '', '```', outcome.log.slice(-6000), '```', '</details>');
+    if (outcome.images) {
+      for (const [page, im] of Object.entries(outcome.images)) {
+        lines.push('', `**${page}**`, '', '| Before | After | Diff |', '|---|---|---|', `| ![](${im.before}) | ![](${im.after}) | ![](${im.diff}) |`);
+      }
+    }
+    return lines.join('\n');
+  });
+
+  const areas = [...new Set(items.map(i => i.fix.area.toLowerCase()))];
+  const reasons = [...new Set(items.map(i => i.outcome.reason))];
+  const labels = ['siteproof', ...areas, ...reasons];
+
+  const title = `[siteproof] Deferred fixes (${items.length} ${items.length === 1 ? 'problem' : 'problems'})`;
+
+  const body = [
+    `The following ${items.length === 1 ? 'problem was' : `${items.length} problems were`} deferred or failed proof during the siteproof run:`, '',
+    sections.join('\n\n---\n\n'), '',
+    '_Filed by siteproof. Run the siteproof audit again to pick up deferred fixes; issues will be closed automatically once all problems are resolved._',
+  ].join('\n');
+
+  return { title, body, labels };
 }
 
 // numbers: {before: {mobile, desktop}, after: {mobile, desktop}}
